@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-catch */
 const client = require("./client");
 
 // database functions
@@ -12,7 +13,7 @@ async function createUser({ username, password }) {
       INSERT INTO users( username, password)
       VALUES ($1, $2)
       ON CONFLICT (username) DO NOTHING
-      RETURNING *
+      RETURNING id, username;
     `,
       [username, password]
     );
@@ -43,7 +44,6 @@ async function getUserById(userId) {
     );
 
     console.log("THIS IS THE PASSWORD: ", user.password);
-    delete user.password;
     return user;
   } catch (error) {
     console.log(error);
