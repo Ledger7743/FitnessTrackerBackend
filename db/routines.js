@@ -1,10 +1,42 @@
+/* eslint-disable no-useless-catch */
 const client = require("./client");
 
-async function createRoutine({ creatorId, isPublic, name, goal }) {}
+async function createRoutine({ creatorId, isPublic, name, goal }) {
+  try {
+    const routines = await client.query(
+      `
+      INSERT INTO routines("creatorId", "isPublic", name, goal)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *;
+      `,
+      [creatorId, isPublic, name, goal]
+    );
+    return routines;
+  } catch (error) {
+    throw error;
+  }
+}
 
 async function getRoutineById(id) {}
 
-async function getRoutinesWithoutActivities() {}
+async function getRoutinesWithoutActivities() {
+  try {
+    const {
+      rows: [user],
+    } = await client.query(
+      `
+      SELECT 
+      ON CONFLICT (username) DO NOTHING
+      RETURNING *;
+    `,
+      [username, password]
+    );
+
+    return user;
+  } catch (error) {
+    throw error;
+  }
+}
 
 async function getAllRoutines() {}
 

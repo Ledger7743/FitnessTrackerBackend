@@ -1,8 +1,22 @@
-const client = require('./client');
+/* eslint-disable no-useless-catch */
+const client = require("./client");
 
 // database functions
 async function createActivity({ name, description }) {
   // return the new activity
+  try {
+    const activities = await client.query(
+      `
+      INSERT INTO activities(name, description)
+      VALUES ($1, $2)
+      RETURNING name, description;
+      `,
+      [name, description]
+    );
+    return activities;
+  } catch (error) {
+    throw error;
+  }
 }
 
 async function getAllActivities() {
