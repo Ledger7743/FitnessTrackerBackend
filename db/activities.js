@@ -24,16 +24,14 @@ async function createActivity({ name, description }) {
 async function getAllActivities() {
   // select and return an array of all activities
   try {
-    const { rows: id } = await client.query(
+    const { rows: activities } = await client.query(
       `
       SELECT *
       FROM activities
       `
     );
-    activities = await Promise.all(
-      id.map((activities) => getActivityById(activity.id))
-    );
-    return;
+
+    return activities;
   } catch (error) {
     throw error;
   }
