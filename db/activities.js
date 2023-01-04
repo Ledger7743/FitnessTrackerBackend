@@ -5,7 +5,9 @@ const client = require("./client");
 async function createActivity({ name, description }) {
   // return the new activity
   try {
-    const activities = await client.query(
+    const {
+      rows: [activities],
+    } = await client.query(
       `
       INSERT INTO activities(name, description)
       VALUES ($1, $2)
@@ -21,6 +23,20 @@ async function createActivity({ name, description }) {
 
 async function getAllActivities() {
   // select and return an array of all activities
+  try {
+    const { rows: id } = await client.query(
+      `
+      SELECT *
+      FROM activities
+      `
+    );
+    activities = await Promise.all(
+      id.map((activities) => getActivityById(activity.id))
+    );
+    return;
+  } catch (error) {
+    throw error;
+  }
 }
 
 async function getActivityById(id) {}
