@@ -25,12 +25,19 @@ async function createUser({ username, password }) {
 }
 
 async function getUser({ username, password }) {
-  const { rows } = await client.query(
+  const {
+    rows: [users],
+  } = await client.query(
     `
-    SELECT * FROM users;
+    SELECT * FROM users
+    RETURNING password;
     `
   );
-  return rows;
+
+  // if ($password == $row["password"])
+  if (user.password === password) {
+    return users;
+  } else return null;
 }
 
 async function getUserById(userId) {
@@ -39,18 +46,36 @@ async function getUserById(userId) {
       rows: [user],
     } = await client.query(
       `
-      SELECT id, username
-      FROM users`
+      SELECT id
+      FROM users
+      WHERE id=${userId};
+      `
     );
 
-    console.log("THIS IS THE PASSWORD: ", user.password);
     return user;
   } catch (error) {
     console.log(error);
   }
 }
 
-async function getUserByUsername(userName) {}
+async function getUserByUsername(username) {
+  try {
+    const {
+      rows: [user],
+    } = await client.query(
+      `
+      SELECT *
+      FROM users
+      WHERE username=$1;
+      `,
+      [username]
+    );
+
+    return user;
+  } catch (error) {
+    throw error;
+  }
+}
 
 module.exports = {
   createUser,
