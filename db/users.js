@@ -58,16 +58,16 @@ async function getUserById(userId) {
       rows: [user],
     } = await client.query(
       `
-      SELECT id
+      SELECT *
       FROM users
-      WHERE id=${userId};
-      `
+      WHERE id=$1;
+      `,
+      [userId]
     );
-
-    delete user.password;
+    console.log("THIS IS THE USER:", user);
     return user;
   } catch (error) {
-    console.log(error);
+    throw error;
   }
 }
 
