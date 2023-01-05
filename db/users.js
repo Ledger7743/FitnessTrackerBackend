@@ -7,8 +7,8 @@ const saltRounds = 10;
 // user functions
 async function createUser({ username, password }) {
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  console.log("THIS IS A USER PASSWORD------------>", password);
-  console.log("this is my hashed password--------->", hashedPassword);
+  // console.log("THIS IS A USER PASSWORD------------>", password);
+  // console.log("this is my hashed password--------->", hashedPassword);
 
   try {
     const {
@@ -23,7 +23,7 @@ async function createUser({ username, password }) {
       [username, hashedPassword]
     );
 
-    console.log("This is a user ------------>", user);
+    // console.log("This is a user ------------>", user);
     return user;
   } catch (error) {
     throw error;
@@ -64,6 +64,7 @@ async function getUserById(userId) {
       `,
       [userId]
     );
+    delete user.password;
     console.log("THIS IS THE USER:", user);
     return user;
   } catch (error) {

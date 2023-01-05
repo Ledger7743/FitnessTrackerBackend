@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-catch */
-const { createFakeUserWithRoutinesAndActivities } = require("../tests/helpers");
+// const { createFakeUserWithRoutinesAndActivities } = require("../tests/helpers");
 const client = require("./client");
 
 async function createRoutine({ creatorId, isPublic, name, goal }) {
