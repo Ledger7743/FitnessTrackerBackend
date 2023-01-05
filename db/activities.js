@@ -78,28 +78,32 @@ async function attachActivitiesToRoutines(routines) {
   // select and return an array of all activities
 }
 
-async function updateActivity(fields = { id, name, description }) {
-  // const { activity } = fields;
-  // const setString = Object.keys(fields)
-  //   .map((key, index) => `"${key}"=$${index + 1}`)
-  //   .join(", ");
-  // try {
-  //   if (setString.length > 0) {
-  //     await client.query(
-  //       `
-  //       UPDATE activities
-  //       SET ${setString}
-  //       WHERE name={$2}, description={$3}
-  //       RETURNING *;
-  //       `,
-  //       Object.values(fields)
-  //     );
-  //   }
-  //   console.log("this is the updated activity:", activity);
-  //   return activity;
-  // } catch (error) {
-  //   throw error;
-  // }
+async function updateActivity({ id, ...fields }) {
+  const setString = Object.keys(fields)
+    .map((key, index) => `"${key}"=$${index + 1}`)
+    .join(", ");
+  console.log("these are my fields", fields);
+  console.log("THIS IS MY SETSTRING:", setString);
+  console.log("dependency array", Object.values(fields));
+  try {
+    if (!setString.length) return;
+    const {
+      rows: [activity],
+    } = await client.query(
+      `
+        UPDATE activities
+        SET ${setString}
+        WHERE id=${id}
+        RETURNING *;
+        `,
+      Object.values(fields)
+    );
+
+    console.log("this is the updated activity:", activity);
+    return activity;
+  } catch (error) {
+    throw error;
+  }
 }
 
 module.exports = {

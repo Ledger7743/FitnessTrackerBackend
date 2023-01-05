@@ -39,9 +39,22 @@ async function getRoutinesWithoutActivities() {
 
 async function getAllRoutines() {
   try {
-    const { rows: routines } = await client.query(`
-    SELECT * FROM routines;
-    `);
+    const { rows: routines } = await client.query(
+      `
+    SELECT * 
+    FROM routines
+    `
+    );
+
+    const {
+      rows: [activity],
+    } = await client.query(
+      `
+      SELECT *
+      FROM activities
+      JOIN routines ON activities.id=routine_tags.
+      `
+    );
 
     const { rows: activities } = await client.query(`
     SELECT * FROM activities
