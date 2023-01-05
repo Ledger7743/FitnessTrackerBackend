@@ -32,30 +32,24 @@ async function createUser({ username, password }) {
 
 async function getUser({ username, password }) {
   const {
-    rows: [user],
+    rows: [users],
   } = await client.query(
     `
-    SELECT * FROM users;
+    SELECT id, username
+    FROM users;
     `
   );
   //trenton added ^^^^^ deleted RETURNING password and got one to pass
+  const user = await getUserByUsername(username);
   const hashedPassword = user.password;
-  const match = await bcrypt.compare(password, hashedPassword);
-
-  if (match) {
+  const passwordsMatch = await bcrypt.compare(password, hashedPassword);
+  if (passwordsMatch) {
+    delete user.password;
     return user;
   } else {
-    delete user.password;
     return null;
   }
   //trenton added
-
-  // ******** commented out ****** \\
-  // if (user.password === password) {
-  //   // if ($password == $row["password"])
-  //   return users;
-  // } else return null;
-  // ******** commented out *******\\\
 }
 
 async function getUserById(userId) {
