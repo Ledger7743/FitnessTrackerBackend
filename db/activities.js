@@ -82,9 +82,9 @@ async function updateActivity({ id, ...fields }) {
   const setString = Object.keys(fields)
     .map((key, index) => `"${key}"=$${index + 1}`)
     .join(", ");
-  console.log("these are my fields", fields);
-  console.log("THIS IS MY SETSTRING:", setString);
-  console.log("dependency array", Object.values(fields));
+  // console.log("these are my fields", fields);
+  // console.log("THIS IS MY SETSTRING:", setString);
+  // console.log("dependency array", Object.values(fields));
   try {
     if (!setString.length) return;
     const {
