@@ -1,6 +1,7 @@
 /* eslint-disable no-useless-catch */
 // const { createFakeUserWithRoutinesAndActivities } = require("../tests/helpers");
 const client = require("./client");
+const { attachActivitiesToRoutines } = require("./activities");
 
 async function createRoutine({ creatorId, isPublic, name, goal }) {
   try {
@@ -61,56 +62,7 @@ async function getAllRoutines() {
         FROM routines
         JOIN users ON routines."creatorId" = users.id; 
         `);
-
-    // includes "their" activities - I don't think we need to add all activities, but the ones the user selects
-    // const {
-    //   rows: [userActivities],
-    // } = await client.query(
-    //   `
-    //   INSERT INTO routines
-    //   FROM activities
-    //   RETURNING *;
-    //   `,
-    //   [userActivities]
-    // );
-
-    // const {
-    //   rows: [userActivities],
-    // } = await client.query(
-    //   `
-    //   INSERT INTO routines (duration, count, "routineId")
-    //   FROM routine_activities
-    //   RETURNING *;
-    //   `,
-    //   [userActivities]
-    // );
-
-    // const {
-    //   rows: [creatorName],
-    // } = await client.query(
-    //   `
-    //   SELECT username
-    //   FROM users;
-    //   `,
-    //   [creatorName]
-    // );
-
-    const { rows: activities } = await client.query(`
-    
-    SELECT * 
-    FROM activities
-    JOIN routine_activities ON routine_activities."activityId" = activities.id
-    `);
-
-    for (const routine of routines) {
-      const activitiesToAdd = activities.filter(
-        (activity) => activity.routineId === routine.id
-      );
-
-      routine.activities = activitiesToAdd;
-    }
-    // console.log("THESE ARE MY ROUTINES: --------------->", routines);
-    return routines;
+    return attachActivitiesToRoutines(routines);
   } catch (error) {
     throw error;
   }
@@ -124,17 +76,64 @@ async function getAllPublicRoutines() {
       JOIN users ON routines."creatorId" = users.id
       WHERE "isPublic" = true;
     `);
-    return routines;
+    return attachActivitiesToRoutines(routines);
   } catch (error) {
     console.error(error);
   }
 }
 
-async function getAllRoutinesByUser({ username }) {}
+async function getAllRoutinesByUser({ username }) {
+  try {
+    const { rows: routines } = await client.query(
+      `
+        SELECT routines.*, users.username AS "creatorName"
+        FROM routines
+        JOIN users ON routines."creatorId" = users.id
+        WHERE users.username = $1; 
+        `,
+      [username]
+    );
+    return attachActivitiesToRoutines(routines);
+  } catch (error) {
+    throw error;
+  }
+}
 
-async function getPublicRoutinesByUser({ username }) {}
+async function getPublicRoutinesByUser({ username }) {
+  try {
+    const { rows: routines } = await client.query(
+      `
+      SELECT routines.*, users.username AS "creatorName"
+      FROM routines
+      JOIN users ON routines."creatorId" = users.id
+      WHERE routines."isPublic" = true AND users.username = $1; 
+        `,
+      [username]
+    );
+    return attachActivitiesToRoutines(routines);
+  } catch (error) {
+    console.error(error);
+  }
+}
 
-async function getPublicRoutinesByActivity({ id }) {}
+async function getPublicRoutinesByActivity({ id }) {
+  try {
+    const { rows: routines } = await client.query(
+      `
+      SELECT routines.*, users.username AS "creatorName"
+      FROM routines
+      JOIN users ON routines."creatorId" = users.id
+      JOIN routine_activities ON routines."activitiesId" = activities.id
+      WHERE routines."isPublic" = true AND routine_activities."activitiesId" =$1;
+      
+        `,
+      [id]
+    );
+    return attachActivitiesToRoutines(routines);
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 async function updateRoutine({ id, ...fields }) {
   const setString = Object.keys(fields)

@@ -1,6 +1,5 @@
 /* eslint-disable no-useless-catch */
 const client = require("./client");
-const { getRoutineActivityById } = require("./routine_activities");
 
 // database functions
 async function createActivity({ name, description }) {
@@ -75,7 +74,29 @@ async function getActivityByName(name) {
 }
 
 async function attachActivitiesToRoutines(routines) {
-  // select and return an array of all activities
+  const routinesToReturn = [...routines];
+
+  try {
+    const { rows: activities } = await client.query(`
+        SELECT activities.*, routine_activities.id 
+        AS "routineActivityId", routine_activities."routineId", routine_activities.
+        duration, routine_activities.count
+        FROM activities
+        JOIN routine_activities ON routine_activities."activityId" = activities.id;
+      `);
+
+    for (const routine of routinesToReturn) {
+      const activitiesToAdd = activities.filter(
+        (activity) => activity.routineId === routine.id
+      );
+
+      routine.activities = activitiesToAdd;
+    }
+
+    return routinesToReturn;
+  } catch (error) {
+    throw error;
+  }
 }
 
 async function updateActivity({ id, ...fields }) {
