@@ -20,7 +20,24 @@ async function createRoutine({ creatorId, isPublic, name, goal }) {
   }
 }
 
-async function getRoutineById(id) {}
+//couldn't check if it works... didnt change any tests?
+async function getRoutineById(id) {
+  try {
+    const {
+      rows: [routine],
+    } = await client.query(
+      `
+    SELECT *
+    FROM routines
+    WHERE id = $1
+    `,
+      [id]
+    );
+    return routine;
+  } catch (error) {
+    throw error;
+  }
+}
 
 async function getRoutinesWithoutActivities() {
   try {
@@ -39,12 +56,11 @@ async function getRoutinesWithoutActivities() {
 
 async function getAllRoutines() {
   try {
-    const { rows: routines } = await client.query(
-      `
-    SELECT * 
-    FROM routines
-    `
-    );
+    const { rows: routines } = await client.query(`
+        SELECT routines.*, users.username AS "creatorName"
+        FROM routines
+        JOIN users ON routines."creatorId" = users.id; 
+        `);
 
     // includes "their" activities - I don't think we need to add all activities, but the ones the user selects
     // const {
@@ -93,7 +109,7 @@ async function getAllRoutines() {
 
       routine.activities = activitiesToAdd;
     }
-    console.log("THESE ARE MY ROUTINES: --------------->", routines);
+    // console.log("THESE ARE MY ROUTINES: --------------->", routines);
     return routines;
   } catch (error) {
     throw error;
@@ -101,13 +117,17 @@ async function getAllRoutines() {
 }
 
 async function getAllPublicRoutines() {
-  // try {
-  //   const { rows: routines } = await client.query(
-  //     `
-  //   SELECT *
-  //   FROM routines
-  //   `
-  //   );
+  try {
+    const { rows: routines } = await client.query(`
+      SELECT routines.*, users.username AS "creatorName"
+      FROM routines
+      JOIN users ON routines."creatorId" = users.id
+      WHERE "isPublic" = true;
+    `);
+    return routines;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function getAllRoutinesByUser({ username }) {}
@@ -120,8 +140,8 @@ async function updateRoutine({ id, ...fields }) {
   const setString = Object.keys(fields)
     .map((key, index) => `"${key}"=$${index + 1}`)
     .join(", ");
-  console.log("these are my fields", fields);
-  console.log("THIS IS MY SETSTRING:", setString);
+  // console.log("these are my fields", fields);
+  // console.log("THIS IS MY SETSTRING:", setString);
   // console.log("dependency array", Object.values(fields));
   try {
     if (!setString.length) return;
@@ -137,7 +157,7 @@ async function updateRoutine({ id, ...fields }) {
       Object.values(fields)
     );
 
-    console.log("this is the updated routine:", routine);
+    // console.log("this is the updated routine:", routine);
     return routine;
   } catch (error) {
     throw error;
@@ -146,6 +166,7 @@ async function updateRoutine({ id, ...fields }) {
 
 async function destroyRoutine(id) {
   try {
+    //needs to delete all the routine_activities who routine is the one being deleted.
     await client.query(
       `
       DELETE FROM routine_activities
@@ -154,12 +175,14 @@ async function destroyRoutine(id) {
       [id]
     );
 
-    //needs to delete all the routine_activities who routine is the one being deleted.
-    await client.query(
+    const {
+      rows: [routine],
+    } = await client.query(
       `
-      DELETE FROM routines
-      WHERE id = $1
-      `,
+    DELETE FROM routines
+    WHERE id = $1
+    RETURNING *;
+    `,
       [id]
     );
   } catch (error) {

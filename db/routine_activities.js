@@ -29,7 +29,7 @@ async function addActivityToRoutine({
 async function getRoutineActivityById(id) {
   try {
     const {
-      rows: [routineActivity],
+      rows: [routine_activities],
     } = await client.query(
       `
     SELECT *
@@ -39,7 +39,7 @@ async function getRoutineActivityById(id) {
       [id]
     );
 
-    return routineActivity;
+    return routine_activities;
   } catch (error) {
     console.log("ERROR IN GETROUTINEACTIVITYBYID");
   }
@@ -49,7 +49,21 @@ async function getRoutineActivitiesByRoutine({ id }) {}
 
 async function updateRoutineActivity({ id, ...fields }) {}
 
-async function destroyRoutineActivity(id) {}
+async function destroyRoutineActivity(id) {
+  try {
+    const {
+      rows: [routine_activities],
+    } = await client.query(`
+    DELETE FROM routine_activities
+    WHERE id =${id}
+    RETURNING *;
+  `);
+
+    return routine_activities;
+  } catch (error) {
+    throw error;
+  }
+}
 
 async function canEditRoutineActivity(routineActivityId, userId) {}
 
