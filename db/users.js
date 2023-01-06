@@ -7,6 +7,7 @@ const saltRounds = 10;
 // user functions
 async function createUser({ username, password }) {
   const hashedPassword = await bcrypt.hash(password, saltRounds);
+  let userToAdd = { username, hashedPassword };
   // console.log("THIS IS A USER PASSWORD------------>", password);
   // console.log("this is my hashed password--------->", hashedPassword);
 
@@ -42,11 +43,13 @@ async function getUser({ username, password }) {
   //trenton added ^^^^^ deleted RETURNING password and got one to pass
   const user = await getUserByUsername(username);
   const hashedPassword = user.password;
-  const passwordsMatch = await bcrypt.compare(password, hashedPassword);
+  let passwordsMatch = await bcrypt.compare(password, hashedPassword);
   if (passwordsMatch) {
     delete user.password;
     return user;
   } else {
+    // throw SomeError;
+
     return null;
   }
   //trenton added

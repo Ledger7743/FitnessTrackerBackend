@@ -123,12 +123,12 @@ async function getPublicRoutinesByActivity({ id }) {
       SELECT routines.*, users.username AS "creatorName"
       FROM routines
       JOIN users ON routines."creatorId" = users.id
-      JOIN routine_activities ON routines."activitiesId" = activities.id
-      WHERE routines."isPublic" = true AND routine_activities."activitiesId" =$1;
-      
+      JOIN routine_activities ON routine_activities."routineId" = routines.id
+      WHERE routines."isPublic" = true AND routine_activities."activityId" =$1; 
         `,
       [id]
     );
+
     return attachActivitiesToRoutines(routines);
   } catch (error) {
     console.error(error);
