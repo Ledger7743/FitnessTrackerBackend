@@ -21,7 +21,6 @@ async function createRoutine({ creatorId, isPublic, name, goal }) {
   }
 }
 
-//couldn't check if it works... didnt change any tests?
 async function getRoutineById(id) {
   try {
     const {

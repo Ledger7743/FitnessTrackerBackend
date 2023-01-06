@@ -61,58 +61,39 @@ async function getRoutineActivitiesByRoutine({ id }) {
   }
 }
 
-// const setString = Object.keys(fields)
-//   .map((key, index) => `"${key}"=$${index + 1}`)
-//   .join(", ");
-// console.log("these are my fields", fields);
-// console.log("THIS IS MY SETSTRING:", setString);
-// console.log("dependency array", Object.values(fields));
-
 async function updateRoutineActivity({ id, ...fields }) {
+  //fields are variables that hold the information
+  // these are my fields { count: 79374, duration: 9191 }
+  //THIS IS MY SETSTRING: "count"=$1, "duration"=$2
+  // dependency array [ 79374, 9191 ]
   try {
-    if (!fields.length) return;
+    const setString = Object.keys(fields)
+      .map((key, index) => `"${key}"=$${index + 1}`)
+      .join(", ");
+
+    // console.log("these are my fields", fields);
+    // console.log("THIS IS MY SETSTRING:", setString);
+    // console.log("dependency array", Object.values(fields));
+    if (!setString.length) return;
     const {
-      rows: [activity],
+      rows: [routine_activities],
     } = await client.query(
       `
         UPDATE routine_activities
-        SET count AND duration
+        SET ${setString}
         WHERE id=${id}
         RETURNING *;
         `,
       Object.values(fields)
     );
 
-    console.log("this is the updated activity:", activity);
+    // console.log("this is the updated activity:", activity);
     return routine_activities;
   } catch (error) {
     throw error;
   }
 }
 
-// try {
-//   if (fields.count) {
-//     await client.query(
-//       `
-//     UPDATE routine_activity
-//     SET count =
-//     WHERE id=${1};
-//     `,
-//       [id]
-//     );
-//   }
-//   if (fields.duration) {
-//     `
-//     UPDATE routine_activity
-//     SET duration =
-//     WHERE id=${1};
-//     `[id];
-//   }
-
-//   return fields;
-// } catch (error) {
-//   throw error;
-// }
 async function destroyRoutineActivity(id) {
   try {
     const {
@@ -129,7 +110,31 @@ async function destroyRoutineActivity(id) {
   }
 }
 
-async function canEditRoutineActivity(routineActivityId, userId) {}
+async function canEditRoutineActivity(routineActivityId, userId) {
+  console.log("thiss is my userId:", userId);
+  console.log("thiss is my routineactivityid:", routineActivityId);
+
+  try {
+    if (!routineActivityId.length) return;
+
+    const {
+      rows: [routine_activities],
+    } = await client.query(
+      `  
+        SELECT routine_activities.*, users.name AS "routineActivityId"
+        FROM routine_activities
+        JOIN users ON routine_activities."routineActivityId" = users.name
+        WHERE users.id=${userId};
+    `
+      // [(routineActivityId, userId)]
+    );
+    // join users and routine activity
+
+    return routine_activities;
+  } catch (error) {
+    throw error;
+  }
+}
 
 module.exports = {
   getRoutineActivityById,
