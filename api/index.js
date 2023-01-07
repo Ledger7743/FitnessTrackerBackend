@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const { getUserById } = require("../db");
 const { JWT_SECRET } = process.env;
+const { getUserById } = require("../db");
 
 // GET /api/health
 router.get("/health", async (req, res, next) => {
@@ -11,6 +11,7 @@ router.get("/health", async (req, res, next) => {
   });
 });
 
+// iAuthorization middleware verify the JWTR is valid and attatch the user to the req
 router.use(async (req, res, next) => {
   const prefix = "Bearer ";
   const auth = req.header("Authorization");
@@ -47,6 +48,8 @@ router.use((req, res, next) => {
 
   next();
 });
+
+/****** Sub routes below ***** */
 // ROUTER: /api/users
 const usersRouter = require("./users");
 router.use("/users", usersRouter);
