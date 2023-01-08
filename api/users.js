@@ -8,7 +8,7 @@ const { JWT_SECRET } = process.env;
 usersRouter.use((req, res, next) => {
   console.log("A request is being made to /users");
 
-  // res.send({ message: "hello from /users ahhhhh!!!" });
+  res.send({ message: "hello from /users ahhhhh!!!" });
   next();
 });
 
