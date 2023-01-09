@@ -4,6 +4,7 @@ const usersRouter = express.Router();
 const jwt = require("jsonwebtoken");
 const { getUserByUsername, createUser } = require("../db");
 const { JWT_SECRET } = process.env;
+const { PasswordTooShortError } = require("../errors");
 
 usersRouter.use((req, res, next) => {
   console.log("A request is being made to /users");
@@ -22,6 +23,12 @@ usersRouter.post("/register", async (req, res, next) => {
       next({
         name: "UserExistsError",
         message: `A user by that ${username} already exists`,
+      });
+    }
+    if (password.length < 8) {
+      next({
+        name: "PasswordNotLongEnough",
+        message: PasswordTooShortError(),
       });
     } else {
       const user = await createUser({

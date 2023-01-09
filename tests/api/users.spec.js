@@ -260,3 +260,19 @@ describe("/api/users", () => {
     });
   });
 });
+
+// return <div>
+//          <form >
+//             <h2>I am Login Below</h2>
+//             <input value={username} minLength={5} type='text' placeholder="username" onChange={(e)=>setUsername(e.target.value)}></input>
+//             <input value={password} minLength={5} type='password' placeholder='password' onChange={(e)=>setPassword(e.target.value)}></input>
+//            {/* console.log("this is the form", logOutUser) */}
+//            <h1>{user?.username} </h1>
+//         </form>
+//         <LogButton
+//             isLoggedIn={isLoggedIn}
+//             content={ isLoggedIn ? 'Log Out' : 'Log In'}
+//             action={!isLoggedIn ? logInUser : logOutUser}
+//             />
+//     </div>
+// }
