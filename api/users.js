@@ -2,12 +2,14 @@
 const express = require("express");
 const usersRouter = express.Router();
 const jwt = require("jsonwebtoken");
-const { getUserByUsername, createUser } = require("../db");
+const { getUserByUsername, createUser, getUser } = require("../db");
 const { JWT_SECRET } = process.env;
-const { PasswordTooShortError } = require("../errors");
+const { PasswordTooShortError, UserTakenError } = require("../errors");
+const bcrypt = require("bcrypt");
+const { requireUser } = require("./utils");
 
 usersRouter.use((req, res, next) => {
-  console.log("A request is being made to /users");
+  // console.log("A request is being made to /users");
 
   next();
 });
@@ -18,13 +20,14 @@ usersRouter.post("/register", async (req, res, next) => {
 
   try {
     const _user = await getUserByUsername(username);
-    console.log(_user);
+    // console.log(_user);
     if (_user) {
       next({
-        name: "UserExistsError",
-        message: `A user by that ${username} already exists`,
+        name: "UserTakenError",
+        message: UserTakenError(username),
       });
     }
+
     if (password.length < 8) {
       next({
         name: "PasswordNotLongEnough",
@@ -72,7 +75,7 @@ usersRouter.post("/login", async (req, res, next) => {
     const user = await getUserByUsername(username);
     const hashedPassword = user.password;
     console.log(
-      "THIS IS MY PASSWORD AND HASHED PASSWAOR-------->",
+      "THIS IS MY PASSWORD AND HASHED PASSWORD-------->",
       password,
       hashedPassword
     );
@@ -83,7 +86,8 @@ usersRouter.post("/login", async (req, res, next) => {
       // maybe delete your password!
       delete user.password;
       const token = jwt.sign(user, JWT_SECRET, { expiresIn: "1h" });
-      res.send({ message: "you're logged in!", token });
+      console.log("this is my token: ------> ", token);
+      res.send({ message: "you're logged in!", token, user });
     } else {
       next({
         name: "IncorrectCredentialsError",
@@ -97,6 +101,13 @@ usersRouter.post("/login", async (req, res, next) => {
 });
 
 // GET /api/users/me
+usersRouter.get("/me", requireUser, async (req, res, next) => {
+  try {
+    res.send(req.user);
+  } catch (error) {
+    next(error);
+  }
+});
 
 // GET /api/users/:username/routines
 

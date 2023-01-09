@@ -9,8 +9,8 @@ client.connect();
 
 // Setup your Middleware and API Router here
 app.use(cors());
-app.use(express.json());
 app.use(morgan("dev"));
+app.use(express.json());
 app.use("/api", router);
 app.use((req, res, next) => {
   console.log("<____Body Logger START____>");
@@ -21,7 +21,7 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
-  console.error("SERVER ERROR");
+  // console.error("SERVER ERROR");
   if (res.statusCode < 400) res.status(500);
   res.send({
     error: error.message,

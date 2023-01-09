@@ -1,6 +1,6 @@
 const express = require("express");
 const apiRouter = express.Router();
-const cors = require("cors");
+// const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 const { getUserById } = require("../db");
