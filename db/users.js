@@ -7,7 +7,6 @@ const saltRounds = 10;
 // user functions
 async function createUser({ username, password }) {
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  let userToAdd = { username, hashedPassword };
   // console.log("THIS IS A USER PASSWORD------------>", password);
   // console.log("this is my hashed password--------->", hashedPassword);
 
@@ -32,14 +31,6 @@ async function createUser({ username, password }) {
 }
 
 async function getUser({ username, password }) {
-  const {
-    rows: [users],
-  } = await client.query(
-    `
-    SELECT id, username
-    FROM users;
-    `
-  );
   //trenton added ^^^^^ deleted RETURNING password and got one to pass
   const user = await getUserByUsername(username);
   const hashedPassword = user.password;

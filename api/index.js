@@ -1,37 +1,25 @@
 const express = require("express");
-const router = express.Router();
+const apiRouter = express.Router();
+const cors = require("cors");
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = process.env;
+const JWT_SECRET = process.env.JWT_SECRET;
 const { getUserById } = require("../db");
 
-// GET /api/health
-router.get("/health", async (req, res, next) => {
-  res.send({
-    message: "all is well",
-  });
-});
-
-// iAuthorization middleware verify the JWTR is valid and attatch the user to the req
-router.use(async (req, res, next) => {
+apiRouter.use(async (req, res, next) => {
   const prefix = "Bearer ";
   const auth = req.header("Authorization");
-
   if (!auth) {
-    // You are not authorized
     next();
   } else if (auth.startsWith(prefix)) {
     const token = auth.slice(prefix.length);
-
     try {
-      //verify the jwt is valid
       const { id } = jwt.verify(token, JWT_SECRET);
-
       if (id) {
         req.user = await getUserById(id);
         next();
       }
-    } catch ({ name, message }) {
-      next({ name, message });
+    } catch (error) {
+      next(error);
     }
   } else {
     next({
@@ -41,29 +29,33 @@ router.use(async (req, res, next) => {
   }
 });
 
-router.use((req, res, next) => {
-  if (req.user) {
-    console.log("User is set:", req.user);
-  }
+// apiRouter.use((req, res, next) => {
+//   if (req.user) {
+//     console.log("User is set:", req.user);
+//   }
+//   next();
+// });
 
-  next();
+// GET /api/health
+apiRouter.get("/health", async (req, res, next) => {
+  res.send({
+    message: "all is well",
+  });
 });
-
-/****** Sub routes below ***** */
 // ROUTER: /api/users
 const usersRouter = require("./users");
-router.use("/users", usersRouter);
+apiRouter.use("/users", usersRouter);
 
 // ROUTER: /api/activities
 const activitiesRouter = require("./activities");
-router.use("/activities", activitiesRouter);
+apiRouter.use("/activities", activitiesRouter);
 
 // ROUTER: /api/routines
 const routinesRouter = require("./routines");
-router.use("/routines", routinesRouter);
+apiRouter.use("/routines", routinesRouter);
 
 // ROUTER: /api/routine_activities
 const routineActivitiesRouter = require("./routineActivities");
-router.use("/routine_activities", routineActivitiesRouter);
+apiRouter.use("/routine_activities", routineActivitiesRouter);
 
-module.exports = router;
+module.exports = apiRouter;

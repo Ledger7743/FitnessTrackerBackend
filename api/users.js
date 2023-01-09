@@ -2,22 +2,13 @@
 const express = require("express");
 const usersRouter = express.Router();
 const jwt = require("jsonwebtoken");
-const { getUser, getUserByUsername, createUser } = require("../db");
+const { getUserByUsername, createUser } = require("../db");
 const { JWT_SECRET } = process.env;
 
 usersRouter.use((req, res, next) => {
   console.log("A request is being made to /users");
 
-  res.send({ message: "hello from /users ahhhhh!!!" });
   next();
-});
-
-usersRouter.get("/", async (req, res) => {
-  const users = await getUser();
-
-  res.send({
-    users,
-  });
 });
 
 // POST /api/users/register
@@ -26,35 +17,37 @@ usersRouter.post("/register", async (req, res, next) => {
 
   try {
     const _user = await getUserByUsername(username);
+    console.log(_user);
     if (_user) {
       next({
         name: "UserExistsError",
-        message: "A user by that username already exists",
+        message: `A user by that ${username} already exists`,
+      });
+    } else {
+      const user = await createUser({
+        username,
+        password,
+      });
+
+      const token = jwt.sign(
+        {
+          id: user.id,
+          username,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1w",
+        }
+      );
+
+      res.send({
+        message: "thank you for signing up",
+        token,
+        user,
       });
     }
-
-    const user = await createUser({
-      username,
-      password,
-    });
-
-    const token = jwt.sign(
-      {
-        id: user.id,
-        username,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1w",
-      }
-    );
-
-    res.send({
-      message: "thank you for signing up",
-      token,
-    });
-  } catch ({ name, message }) {
-    next({ name, message });
+  } catch (error) {
+    next(error);
   }
 });
 // POST /api/users/login
@@ -70,12 +63,19 @@ usersRouter.post("/login", async (req, res, next) => {
     }
 
     const user = await getUserByUsername(username);
+    const hashedPassword = user.password;
+    console.log(
+      "THIS IS MY PASSWORD AND HASHED PASSWAOR-------->",
+      password,
+      hashedPassword
+    );
+    const match = await bcrypt.compare(password, hashedPassword);
     console.log("user retrieved:", user);
-    if (user && user.password == password) {
+    if (user && match) {
       // create token & return to user
       // maybe delete your password!
-      const token = jwt.sign(user, JWT_SECRET);
       delete user.password;
+      const token = jwt.sign(user, JWT_SECRET, { expiresIn: "1h" });
       res.send({ message: "you're logged in!", token });
     } else {
       next({
